@@ -186,13 +186,10 @@ function setGauge(id, pct, made, att) {
 
 function select(p) {
   current = p;
-  const words = p.name.split(" ");
-  $("cInit").textContent = words[0][0] + words[words.length - 1][0];
-  const img = $("cImg"), photo = (SNAPSHOT.photos || []).includes(p.last.toLowerCase());
-  $("cAvatar").classList.toggle("has-photo", photo);
-  if (photo) img.src = `img/${p.last.toLowerCase()}.jpg`;
+  const num = NUMBERS[p.name];
+  $("jNum").textContent = num;
+  $("jNum").style.fontSize = num.length > 1 ? "44px" : "56px";
   const posName = { G: "Guard", F: "Forward", C: "Center" }[p.pos];
-  $("cBadge").textContent = p.pos;
   $("cName").textContent = p.name;
   $("cSub").textContent = `${posName}  ·  ${p.gp} games  ·  ${p.gs} starts  ·  ${p.min.toFixed(1)} min`;
   $("bPts").textContent = p.pts.toFixed(1);

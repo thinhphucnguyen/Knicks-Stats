@@ -3,6 +3,14 @@
 // All player numbers are per-game averages, except gp / gs.
 // To update: replace the rows below and the record/next game, then refresh the page.
 
+// Jersey numbers from ESPN's Knicks roster page.
+const NUMBERS = {
+  "Jalen Brunson": "11", "Karl-Anthony Towns": "32", "OG Anunoby": "8", "Landry Shamet": "44",
+  "Josh Hart": "3", "Miles McBride": "2", "Jordan Clarkson": "00", "Mikal Bridges": "25",
+  "Dalton Knecht": "99", "Andre Drummond": "0", "Pacome Dadiet": "4", "Tyler Kolek": "13",
+  "Mohamed Diawara": "51", "Jose Alvarado": "5", "James Wiseman": "35", "Jaden Akins": "14"
+};
+
 const SNAPSHOT = {
   asOf: "Nov 13, 2026",
   source: "ESPN",
@@ -12,9 +20,6 @@ const SNAPSHOT = {
   teamFga: 88.7,
   teamFta: 22.7,
 
-  // Optional player photos. Put your own images in an img/ folder named by
-  // lowercase last name (img/brunson.jpg) and list the names here: ["brunson", "towns"]
-  photos: [],
 
   // name, pos, gp, gs, min, pts, reb, ast, stl, blk, tov, fgp, tpp, ftp, fgm, fga, tpm, tpa, ftm, fta
   rows: [

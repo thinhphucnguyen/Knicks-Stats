@@ -20,12 +20,6 @@ then open http://localhost:8000 (or just open `index.html` directly).
 - Click any player: bar, strip segment or dot. Left/right arrow keys cycle through the roster.
 - Hover the scatter dots and the points strip for details.
 
-## Player photos
-
-The card shows a monogram by default. To use real photos, drop images you have
-the rights to into `img/` named by lowercase last name (`img/brunson.jpg`) and list
-those names in `photos` in `data.js`.
-
 ## Data
 
 `data.js` holds a snapshot of ESPN's team stats page (Nov 13, 2026, 6-5 record).
