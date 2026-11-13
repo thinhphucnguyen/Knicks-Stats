@@ -339,3 +339,22 @@ section[id], .grid[id], .duo[id] { scroll-margin-top: 64px; }
   .kv { grid-template-columns: repeat(2, auto); }
   .panel { padding: 22px 18px; }
 }
+
+/* ---------- logo ---------- */
+.brand { display: inline-flex; align-items: center; gap: 10px; }
+.brand img { height: 26px; width: auto; display: block; }
+.hero-in { position: relative; }
+.hero-logo { position: absolute; right: 28px; top: 4px; height: 210px; width: auto; filter: drop-shadow(0 10px 30px rgba(0, 0, 0, .5)); }
+.court { opacity: .06; right: auto; left: -120px; }
+@media (max-width: 900px) {
+  .hero-logo { height: 92px; right: 18px; top: 4px; }
+}
+
+.brand span { white-space: nowrap; }
+@media (max-width: 900px) {
+  .hero-logo { top: 46px; height: 96px; }
+  .links { gap: 12px; }
+  .links a { font-size: 12px; }
+  .brand span { font-size: 14px; }
+}
+@media (max-width: 420px) { .brand span { display: none; } }
