@@ -5,8 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Knicks Stats</title>
 <link rel="icon" href="data:,">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -25,18 +23,18 @@
   </svg>
 
   <div class="wrap hero-in">
-    <p class="eyebrow cond">New York Knicks &middot; 2026&ndash;27 regular season</p>
+    <p class="eyebrow">New York Knicks &middot; 2026&ndash;27 season</p>
     <div class="record">
-      <span class="cond big" id="rec">6&ndash;5</span>
+      <span class="big" id="rec">6&ndash;5</span>
       <div class="next">
-        <span class="label">Next up</span>
+        <span class="label">Next game</span>
         <span id="next"></span>
       </div>
     </div>
 
     <div class="strip-head">
       <span class="label">Where the <b id="teamTotal"></b> points came from</span>
-      <span class="label hint">hover &middot; click</span>
+      <span class="label hint">Hover or click a player</span>
     </div>
     <div class="strip" id="strip"></div>
   </div>
@@ -45,7 +43,7 @@
 <main class="wrap grid">
   <section class="panel">
     <div class="panel-head">
-      <h2 class="cond">Leaderboard</h2>
+      <h2>Leaders</h2>
       <div class="chips" id="chips"></div>
     </div>
     <div class="board" id="board"></div>
@@ -54,17 +52,17 @@
 
   <section class="panel card" id="card">
     <div class="card-top">
+      <div class="avatar" id="cAvatar"><span id="cInit"></span><img id="cImg" alt=""><em id="cBadge"></em></div>
       <div>
-        <div class="pos label" id="cPos"></div>
-        <h2 class="cond name" id="cName"></h2>
+                <h2 class="name" id="cName"></h2>
         <div class="sub" id="cSub"></div>
       </div>
     </div>
 
     <div class="big3">
-      <div><b class="cond" id="bPts"></b><span class="label">pts</span></div>
-      <div><b class="cond" id="bReb"></b><span class="label">reb</span></div>
-      <div><b class="cond" id="bAst"></b><span class="label">ast</span></div>
+      <div><b id="bPts"></b><span class="label">Points</span></div>
+      <div><b id="bReb"></b><span class="label">Rebounds</span></div>
+      <div><b id="bAst"></b><span class="label">Assists</span></div>
     </div>
 
     <div class="two">
@@ -76,7 +74,7 @@
       <div>
         <div class="label">Shooting</div>
         <div class="gauges" id="gauges"></div>
-        <div class="label" style="margin-top:18px">Where his points come from</div>
+        <div class="label" style="margin-top:18px">How he scores</div>
         <div class="mix" id="mix">
           <i class="m2"></i><i class="m3"></i><i class="mf"></i>
         </div>
@@ -85,7 +83,7 @@
           <span><s class="m3"></s>3-pt <b id="k3"></b></span>
           <span><s class="mf"></s>FT <b id="kf"></b></span>
         </div>
-        <div class="label" style="margin-top:18px">Also per game</div>
+        <div class="label" style="margin-top:22px">Also per game</div>
         <div class="mini" id="mini"></div>
       </div>
     </div>
@@ -93,8 +91,8 @@
 
   <section class="panel wide">
     <div class="panel-head">
-      <h2 class="cond">Volume vs. efficiency</h2>
-      <span class="label">5+ GP, 10+ MPG &middot; dot size = minutes</span>
+      <h2>Volume vs. efficiency</h2>
+      <span class="label">5+ games, 10+ minutes &middot; dot size shows minutes</span>
     </div>
     <svg viewBox="0 0 760 340" id="scatter" class="scatter"></svg>
   </section>

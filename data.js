@@ -12,6 +12,10 @@ const SNAPSHOT = {
   teamFga: 88.7,
   teamFta: 22.7,
 
+  // Optional player photos. Put your own images in an img/ folder named by
+  // lowercase last name (img/brunson.jpg) and list the names here: ["brunson", "towns"]
+  photos: [],
+
   // name, pos, gp, gs, min, pts, reb, ast, stl, blk, tov, fgp, tpp, ftp, fgm, fga, tpm, tpa, ftm, fta
   rows: [
     ["Jalen Brunson",       "G", 11, 11, 33.6, 26.0,  3.1, 5.2, 0.6, 0.4, 1.6, 43.0, 36.7,  78.2, 8.9, 20.7, 2.6, 7.2, 5.5, 7.1],

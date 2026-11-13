@@ -60,7 +60,7 @@ byTotal.forEach(p => {
 });
 
 // ---------- leaderboard (animated re-sort) ----------
-const ROW = 34;
+const ROW = 36;
 const STATS = [
   { key: "pts", label: "PTS" },
   { key: "reb", label: "REB" },
@@ -125,7 +125,7 @@ const AXES = [
   { l: "PTS",     v: p => p.pts },
   { l: "REB",     v: p => p.reb },
   { l: "AST",     v: p => p.ast },
-  { l: "STL+BLK", v: p => p.stocks },
+  { l: "Stl + Blk", v: p => p.stocks },
   { l: "3PM",     v: p => p.tpm },
   { l: "TS%",     v: p => p.ts, lo: 40, hi: 70 }
 ];
@@ -186,9 +186,15 @@ function setGauge(id, pct, made, att) {
 
 function select(p) {
   current = p;
-  $("cPos").textContent = { G: "Guard", F: "Forward", C: "Center" }[p.pos];
+  const words = p.name.split(" ");
+  $("cInit").textContent = words[0][0] + words[words.length - 1][0];
+  const img = $("cImg"), photo = (SNAPSHOT.photos || []).includes(p.last.toLowerCase());
+  $("cAvatar").classList.toggle("has-photo", photo);
+  if (photo) img.src = `img/${p.last.toLowerCase()}.jpg`;
+  const posName = { G: "Guard", F: "Forward", C: "Center" }[p.pos];
+  $("cBadge").textContent = p.pos;
   $("cName").textContent = p.name;
-  $("cSub").textContent = `${p.gp} games  ·  ${p.gs} starts  ·  ${p.min.toFixed(1)} min`;
+  $("cSub").textContent = `${posName}  ·  ${p.gp} games  ·  ${p.gs} starts  ·  ${p.min.toFixed(1)} min`;
   $("bPts").textContent = p.pts.toFixed(1);
   $("bReb").textContent = p.reb.toFixed(1);
   $("bAst").textContent = p.ast.toFixed(1);
@@ -209,8 +215,8 @@ function select(p) {
   $("k3").textContent = sum ? pc(three).toFixed(0) + "%" : "–";
   $("kf").textContent = sum ? pc(ft).toFixed(0) + "%" : "–";
 
-  const mini = [["stl", p.stl], ["blk", p.blk], ["tov", p.tov], ["ts%", p.ts], ["poss", p.use], ["season pts", p.total]];
-  $("mini").innerHTML = mini.map(([l, v]) => `<div><b class="cond">${l === "season pts" ? Math.round(v) : v.toFixed(1)}</b><span class="label">${l}</span></div>`).join("");
+  const mini = [["Steals", p.stl], ["Blocks", p.blk], ["Turnovers", p.tov], ["True shooting", p.ts], ["Possessions", p.use], ["Season pts", p.total]];
+  $("mini").innerHTML = mini.map(([l, v]) => `<div><b>${l === "Season pts" ? Math.round(v) : v.toFixed(1)}</b><span class="label">${l}</span></div>`).join("");
 
   // highlight everywhere
   rows.forEach((r, q) => r.classList.toggle("sel", q === p));
