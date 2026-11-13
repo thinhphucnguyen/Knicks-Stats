@@ -9,7 +9,19 @@
 </head>
 <body>
 
-<header class="hero">
+<nav class="nav" id="nav">
+  <div class="nav-in">
+    <a class="brand" href="#top">Knicks Stats</a>
+    <div class="links">
+      <a href="#outlook">Outlook</a>
+      <a href="#players">Players</a>
+      <a href="#league">League</a>
+      <a href="#standings">Standings</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero" id="top">
   <svg class="court" viewBox="-10 -10 520 320" aria-hidden="true">
     <g fill="none" stroke="currentColor" stroke-width="2">
       <line x1="0" y1="0" x2="500" y2="0"/>
@@ -64,7 +76,7 @@
         </div>
         <div class="label sect">Where they finish in the East</div>
         <svg viewBox="0 0 520 170" id="seedChart" class="seedchart"></svg>
-        <p class="note" id="oNote"></p>
+        <div class="kv" id="oNote"></div>
       </div>
       <div>
         <div class="label">Championship odds</div>
@@ -73,7 +85,7 @@
     </div>
   </section>
 
-  <div class="grid">
+  <div class="grid" id="players">
     <section class="panel">
       <div class="panel-head">
         <h2>Leaders</h2>
@@ -107,9 +119,8 @@
 
       <div class="two">
         <div>
-          <div class="label">Profile</div>
+          <div class="label">Profile <span class="info" data-tip="Scaled to the team&#39;s best rotation player in each category">i</span></div>
           <svg viewBox="0 0 300 280" class="radar" id="radar"></svg>
-          <p class="note">Scaled to the best rotation player on the team in each category.</p>
         </div>
         <div>
           <div class="label">Shooting</div>
@@ -130,23 +141,21 @@
     </section>
   </div>
 
-  <div class="duo">
+  <div class="duo" id="league">
     <section class="panel">
       <div class="panel-head">
-        <h2>Knicks vs. the league</h2>
+        <h2>Knicks vs. the league <span class="info" data-tip="Compared with the league&#39;s 43 top scorers (ESPN). Rebound and assist ranks only count those players.">i</span></h2>
         <div class="chips" id="cmpChips"></div>
       </div>
       <div class="barlist" id="cmpList"></div>
-      <p class="note">Compared with the league's 43 top scorers (ESPN). Rebound and assist ranks only count those players. Shooting percentages have no attempts minimum.</p>
     </section>
 
     <section class="panel">
       <div class="panel-head">
         <h2>MVP race</h2>
-        <span class="label">Model estimate</span>
+        <span class="label">Model estimate <span class="info" data-tip="Not betting odds. Based on production, the team&#39;s projected wins from the simulation, and games played.">i</span></span>
       </div>
       <div class="barlist" id="mvpList"></div>
-      <p class="note">A simple model, not betting odds: a player's production (points, rebounds, assists, steals, blocks, turnovers), his team's projected wins from the simulation above, and games played. It moves when the simulation does.</p>
     </section>
   </div>
 
@@ -177,24 +186,27 @@
     <section class="panel">
       <div class="panel-head">
         <h2>Where the points come from</h2>
+        <span class="label" id="distNote"></span>
       </div>
       <div class="barlist" id="distList"></div>
-      <p class="note" id="distNote"></p>
     </section>
 
     <section class="panel">
       <div class="panel-head">
         <h2>Volume vs. efficiency</h2>
-        <span class="label">5+ games, 10+ minutes &middot; dot size shows minutes</span>
+        <span class="label">Dot size shows minutes <span class="info" data-tip="Players with 5+ games and 10+ minutes per game">i</span></span>
       </div>
-      <svg viewBox="0 0 700 470" id="scatter" class="scatter"></svg>
+      <svg viewBox="0 0 700 420" id="scatter" class="scatter"></svg>
     </section>
   </div>
 </main>
 
 <footer class="wrap foot">
   <span id="asof"></span>
-  <span>How the odds work: each team's points margin per game, pulled toward zero because the sample is small, sets its strength. The rest of every schedule is played against random opponents with a small home edge, then the play-in and four best-of-7 rounds. Thousands of seasons are simulated in your browser. Standings lag the player table by a game or two for some teams. &larr; &rarr; cycles players.</span>
+  <details class="how">
+    <summary>How the odds work</summary>
+    <p>A team's strength comes from its points margin, pulled toward zero because the sample is small. The rest of each schedule is played against random opponents, then the play-in and best-of-7 rounds. 20,000 seasons run in your browser.</p>
+  </details>
 </footer>
 
 <div class="tip" id="tip"></div>

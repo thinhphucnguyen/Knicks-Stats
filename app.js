@@ -66,7 +66,7 @@ players.forEach(p => {
 // ---------- generic bar list ----------
 // items: { rank, label, sub, value, text, hot, onclick }
 function barList(el, items) {
-  const max = Math.max(...items.map(i => i.value), 0.0001);
+  const max = Math.max(...items.filter(i => !i.gap).map(i => i.value), 0.0001);
   el.innerHTML = items.map((it, n) => it.gap
     ? `<div class="bgap">${it.gap}</div>`
     : `<div class="brow${it.hot ? " hot" : ""}" data-i="${n}">
@@ -138,7 +138,7 @@ function renderBoard() {
     r.querySelector(".v").textContent = v.toFixed(1);
   });
   STATS.forEach(s => s.btn.classList.toggle("on", s === stat));
-  $("boardNote").textContent = stat.note || "Per-game averages, sorted high to low";
+  $("boardNote").textContent = stat.note || "";
 }
 
 // ---------- player card ----------
@@ -248,16 +248,19 @@ function select(p) {
 // ---------- where the points come from ----------
 function renderDist() {
   const sorted = [...players].filter(p => p.total > 0).sort((a, b) => b.total - a.total);
-  barList($("distList"), sorted.map((p, i) => ({
+  const items = sorted.slice(0, 10).map((p, i) => ({
     rank: i + 1, label: p.name, value: p.total,
     text: `${(p.total / teamTotal * 100).toFixed(0)}%`, hot: p === current,
     onclick: () => select(p)
-  })));
-  $("distNote").textContent = `${Math.round(teamTotal).toLocaleString()} points in ${SNAPSHOT.record.w + SNAPSHOT.record.l} games. Each bar is a player's share.`;
+  }));
+  const rest = sorted.slice(10).reduce((s, p) => s + p.total, 0);
+  items.push({ label: "Rest of roster", value: rest, text: `${(rest / teamTotal * 100).toFixed(0)}%`, hot: sorted.indexOf(current) >= 10 });
+  barList($("distList"), items);
+  $("distNote").textContent = `${Math.round(teamTotal).toLocaleString()} pts · ${SNAPSHOT.record.w + SNAPSHOT.record.l} games`;
 }
 
 // ---------- scatter: volume vs efficiency ----------
-const W = 700, H = 470, M = { l: 52, r: 22, t: 14, b: 46 };
+const W = 700, H = 420, M = { l: 52, r: 58, t: 14, b: 46 };
 const X0 = 2, X1 = 28, Y0 = 30, Y1 = 70;
 const sx = v => M.l + ((v - X0) / (X1 - X0)) * (W - M.l - M.r);
 const sy = v => H - M.b - ((v - Y0) / (Y1 - Y0)) * (H - M.t - M.b);
@@ -395,7 +398,12 @@ function renderOutlook(progress, seconds) {
     seedLabels[n].textContent = v >= 0.03 ? Math.round(v * 100) + "%" : "";
   });
   const avgSeed = k.seeds.reduce((s, v, n) => s + v * (n + 1), 0);
-  $("oNote").innerHTML = `Projected record <b>${Math.round(k.wins)}&ndash;${82 - Math.round(k.wins)}</b> &middot; average seed <b>${avgSeed.toFixed(1)}</b> &middot; direct playoff spot (top 6) <b>${fmtPct(k.top6)}</b> &middot; play-in <b>${fmtPct(k.playin)}</b>`;
+  $("oNote").innerHTML = [
+    [`${Math.round(k.wins)}\u2013${82 - Math.round(k.wins)}`, "Projected record"],
+    [avgSeed.toFixed(1), "Average seed"],
+    [fmtPct(k.top6), "Top-6 seed"],
+    [fmtPct(k.playin), "Play-in"]
+  ].map(([v, l]) => `<div><b>${v}</b><span class="label">${l}</span></div>`).join("");
 
   // championship odds
   const ranked = shownTeams.map((t, n) => ({ t, r: latest[n] })).sort((a, b) => b.r.title - a.r.title);
@@ -494,6 +502,20 @@ $("dlLeague").onclick = () => {
   download("league-leaders-mvp-model.csv", [head, ...LEAGUE_PLAYERS.map(p => [p.name, p.team, p.pos, p.gp, p.min, p.pts, p.reb, p.ast, p.stl, p.blk, p.tov,
     p.fgp, p.tpp, p.ftp, ((odds.get(p.name) || 0) * 100).toFixed(1)])]);
 };
+
+// ---------- info hints ----------
+document.querySelectorAll(".info").forEach(el => {
+  el.onmousemove = e => showTip(e, esc(el.dataset.tip));
+  el.onmouseleave = hideTip;
+  el.onclick = e => { showTip(e, esc(el.dataset.tip)); setTimeout(hideTip, 2500); };
+});
+
+// ---------- nav highlight ----------
+const navLinks = [...document.querySelectorAll(".links a")];
+const spy = new IntersectionObserver(es => es.forEach(e => {
+  if (e.isIntersecting) navLinks.forEach(l => l.classList.toggle("on", l.getAttribute("href") === "#" + e.target.id));
+}), { rootMargin: "-45% 0px -50% 0px" });
+["outlook", "players", "league", "standings"].forEach(id => spy.observe($(id)));
 
 // ---------- keyboard ----------
 addEventListener("keydown", e => {
