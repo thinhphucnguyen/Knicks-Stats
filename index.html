@@ -33,86 +33,175 @@
     </div>
 
     <div class="strip-head">
-      <span class="label">Where the <b id="teamTotal"></b> points came from</span>
-      <span class="label hint">Hover or click a player</span>
+      <span class="label">Pick a player</span>
+      <span class="label hint">Sorted by points per game</span>
     </div>
-    <div class="strip" id="strip"></div>
+    <div class="tiles" id="tiles"></div>
   </div>
 </header>
 
-<main class="wrap grid">
-  <section class="panel">
+<main class="wrap">
+
+  <section class="panel outlook" id="outlook">
     <div class="panel-head">
-      <h2>Leaders</h2>
-      <div class="chips" id="chips"></div>
-    </div>
-    <div class="board" id="board"></div>
-    <p class="note" id="boardNote"></p>
-  </section>
-
-  <section class="panel card" id="card">
-    <div class="card-top">
-      <svg class="jersey" viewBox="0 0 120 132" aria-hidden="true">
-        <path class="j-body" d="M34 6H48C48 22 54 30 60 30C66 30 72 22 72 6H86C86 28 94 38 100 42V126H20V42C26 38 34 28 34 6Z"/>
-        <path class="j-trim" d="M48 6C48 22 54 30 60 30C66 30 72 22 72 6"/>
-        <path class="j-trim" d="M34 6C34 28 26 38 20 42"/>
-        <path class="j-trim" d="M86 6C86 28 94 38 100 42"/>
-        <rect class="j-hem" x="20" y="118" width="80" height="8"/>
-        <text class="j-num" id="jNum" x="60" y="92" text-anchor="middle"></text>
-      </svg>
       <div>
-                <h2 class="name" id="cName"></h2>
-        <div class="sub" id="cSub"></div>
+        <h2>Season outlook</h2>
+        <p class="label" id="simStatus">Simulating&hellip;</p>
+      </div>
+      <div class="ctl">
+        <div class="chips" id="scenario"></div>
+        <button class="chip dark" id="rerun" type="button">Run again</button>
       </div>
     </div>
+    <div class="progress"><i id="simBar"></i></div>
 
-    <div class="big3">
-      <div><b id="bPts"></b><span class="label">Points</span></div>
-      <div><b id="bReb"></b><span class="label">Rebounds</span></div>
-      <div><b id="bAst"></b><span class="label">Assists</span></div>
-    </div>
-
-    <div class="two">
+    <div class="outlook-grid">
       <div>
-        <div class="label">Profile</div>
-        <svg viewBox="0 0 300 280" class="radar" id="radar"></svg>
-        <p class="note">Scaled to the best rotation player on the team in each category.</p>
+        <div class="odds3">
+          <div><b id="oPlay">&ndash;</b><span class="label">Make the playoffs</span></div>
+          <div><b id="oConf">&ndash;</b><span class="label">Win the East</span></div>
+          <div><b id="oTitle">&ndash;</b><span class="label">Win the title</span></div>
+        </div>
+        <div class="label sect">Where they finish in the East</div>
+        <svg viewBox="0 0 520 170" id="seedChart" class="seedchart"></svg>
+        <p class="note" id="oNote"></p>
       </div>
       <div>
-        <div class="label">Shooting</div>
-        <div class="gauges" id="gauges"></div>
-        <div class="label" style="margin-top:18px">How he scores</div>
-        <div class="mix" id="mix">
-          <i class="m2"></i><i class="m3"></i><i class="mf"></i>
-        </div>
-        <div class="mixkey">
-          <span><s class="m2"></s>2-pt <b id="k2"></b></span>
-          <span><s class="m3"></s>3-pt <b id="k3"></b></span>
-          <span><s class="mf"></s>FT <b id="kf"></b></span>
-        </div>
-        <div class="label" style="margin-top:22px">Also per game</div>
-        <div class="mini" id="mini"></div>
+        <div class="label">Championship odds</div>
+        <div class="barlist" id="titleList"></div>
       </div>
     </div>
   </section>
 
-  <section class="panel wide">
+  <div class="grid">
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Leaders</h2>
+        <div class="chips" id="chips"></div>
+      </div>
+      <div class="board" id="board"></div>
+      <p class="note" id="boardNote"></p>
+    </section>
+
+    <section class="panel card" id="card">
+      <div class="card-top">
+        <svg class="jersey" viewBox="0 0 120 132" aria-hidden="true">
+          <path class="j-body" d="M34 6H48C48 22 54 30 60 30C66 30 72 22 72 6H86C86 28 94 38 100 42V126H20V42C26 38 34 28 34 6Z"/>
+          <path class="j-trim" d="M48 6C48 22 54 30 60 30C66 30 72 22 72 6"/>
+          <path class="j-trim" d="M34 6C34 28 26 38 20 42"/>
+          <path class="j-trim" d="M86 6C86 28 94 38 100 42"/>
+          <rect class="j-hem" x="20" y="118" width="80" height="8"/>
+          <text class="j-num" id="jNum" x="60" y="92" text-anchor="middle"></text>
+        </svg>
+        <div>
+          <h2 class="name" id="cName"></h2>
+          <div class="sub" id="cSub"></div>
+        </div>
+      </div>
+
+      <div class="big3">
+        <div><b id="bPts"></b><span class="label">Points</span></div>
+        <div><b id="bReb"></b><span class="label">Rebounds</span></div>
+        <div><b id="bAst"></b><span class="label">Assists</span></div>
+      </div>
+
+      <div class="two">
+        <div>
+          <div class="label">Profile</div>
+          <svg viewBox="0 0 300 280" class="radar" id="radar"></svg>
+          <p class="note">Scaled to the best rotation player on the team in each category.</p>
+        </div>
+        <div>
+          <div class="label">Shooting</div>
+          <div class="gauges" id="gauges"></div>
+          <div class="label" style="margin-top:18px">How he scores</div>
+          <div class="mix" id="mix">
+            <i class="m2"></i><i class="m3"></i><i class="mf"></i>
+          </div>
+          <div class="mixkey">
+            <span><s class="m2"></s>2-pt <b id="k2"></b></span>
+            <span><s class="m3"></s>3-pt <b id="k3"></b></span>
+            <span><s class="mf"></s>FT <b id="kf"></b></span>
+          </div>
+          <div class="label" style="margin-top:22px">Also per game</div>
+          <div class="mini" id="mini"></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="duo">
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Knicks vs. the league</h2>
+        <div class="chips" id="cmpChips"></div>
+      </div>
+      <div class="barlist" id="cmpList"></div>
+      <p class="note">Compared with the league's 43 top scorers (ESPN). Rebound and assist ranks only count those players. Shooting percentages have no attempts minimum.</p>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2>MVP race</h2>
+        <span class="label">Model estimate</span>
+      </div>
+      <div class="barlist" id="mvpList"></div>
+      <p class="note">A simple model, not betting odds: a player's production (points, rebounds, assists, steals, blocks, turnovers), his team's projected wins from the simulation above, and games played. It moves when the simulation does.</p>
+    </section>
+  </div>
+
+  <section class="panel wide" id="standings">
     <div class="panel-head">
-      <h2>Volume vs. efficiency</h2>
-      <span class="label">5+ games, 10+ minutes &middot; dot size shows minutes</span>
+      <h2>Standings</h2>
+      <div class="ctl">
+        <div class="chips" id="confChips"></div>
+      </div>
     </div>
-    <svg viewBox="0 0 760 340" id="scatter" class="scatter"></svg>
+    <div class="tbl-wrap">
+      <table class="tbl" id="standTbl">
+        <thead>
+          <tr><th></th><th>Team</th><th>W&ndash;L</th><th>Pct</th><th>GB</th><th>Margin</th><th>Playoffs</th><th>Title</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div class="dl">
+      <span class="label">Download</span>
+      <button class="btn" id="dlStand" type="button">Standings and odds (CSV)</button>
+      <button class="btn" id="dlKnicks" type="button">Knicks player stats (CSV)</button>
+      <button class="btn" id="dlLeague" type="button">League leaders and MVP model (CSV)</button>
+    </div>
   </section>
+
+  <div class="grid">
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Where the points come from</h2>
+      </div>
+      <div class="barlist" id="distList"></div>
+      <p class="note" id="distNote"></p>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Volume vs. efficiency</h2>
+        <span class="label">5+ games, 10+ minutes &middot; dot size shows minutes</span>
+      </div>
+      <svg viewBox="0 0 700 470" id="scatter" class="scatter"></svg>
+    </section>
+  </div>
 </main>
 
 <footer class="wrap foot">
   <span id="asof"></span>
-  <span>True shooting = PTS &divide; (2 &times; (FGA + 0.44 &times; FTA)). Shot-ending possessions = FGA + 0.44 &times; FTA + TOV. &larr; &rarr; cycles players.</span>
+  <span>How the odds work: each team's points margin per game, pulled toward zero because the sample is small, sets its strength. The rest of every schedule is played against random opponents with a small home edge, then the play-in and four best-of-7 rounds. Thousands of seasons are simulated in your browser. Standings lag the player table by a game or two for some teams. &larr; &rarr; cycles players.</span>
 </footer>
 
 <div class="tip" id="tip"></div>
 
 <script src="data.js"></script>
+<script src="league.js"></script>
+<script src="sim.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

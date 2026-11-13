@@ -54,25 +54,6 @@ h2, .big, .name, .big3 b, .mini b {
 .next span:last-child { font-size: 21px; font-weight: 500; letter-spacing: -0.02em; }
 
 .strip-head { display: flex; justify-content: space-between; margin-bottom: 10px; }
-.strip-head b { color: #f5f5f7; font-weight: 600; }
-.strip { display: flex; gap: 3px; height: 48px; }
-.seg {
-  position: relative;
-  background: rgba(255, 255, 255, .15);
-  min-width: 2px;
-  cursor: pointer;
-  overflow: hidden;
-  border-radius: 6px;
-  transition: background .25s;
-}
-.seg:first-child { border-radius: 12px 6px 6px 12px; }
-.seg:last-child { border-radius: 6px 12px 12px 6px; }
-.seg:hover { background: rgba(255, 255, 255, .28); }
-.seg.sel { background: var(--orange); }
-.seg span {
-  position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
-  font-size: 13px; font-weight: 600; white-space: nowrap; color: #fff;
-}
 
 /* ---------- layout ---------- */
 .grid {
@@ -163,6 +144,94 @@ h2, .big, .name, .big3 b, .mini b {
 .mini b { display: block; font-size: 26px; line-height: 1.1; font-weight: 600; letter-spacing: -0.035em; }
 .mini .label { font-size: 12px; }
 
+
+/* ---------- roster tiles ---------- */
+.tiles { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 8px; }
+.tile {
+  font: inherit; color: #f5f5f7; text-align: left; cursor: pointer;
+  background: rgba(255, 255, 255, .09); border: 0; border-radius: 14px;
+  padding: 12px 12px 11px; min-height: 92px;
+  display: flex; flex-direction: column; justify-content: space-between;
+  transition: background .2s, transform .2s;
+}
+.tile { min-width: 0; }
+.tile:hover { background: rgba(255, 255, 255, .17); transform: translateY(-2px); }
+.tile.sel { background: var(--orange); }
+.tile b { font-size: 30px; line-height: 1; font-weight: 700; letter-spacing: -0.04em;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Arial, sans-serif; }
+.tile span { font-size: 14px; font-weight: 600; letter-spacing: -0.015em; margin-top: 8px; }
+.tile i { font-style: normal; font-size: 12px; color: rgba(245, 245, 247, .6); }
+.tile.sel i { color: rgba(255, 255, 255, .85); }
+
+/* ---------- section spacing ---------- */
+main.wrap > .panel, main.wrap > .duo, main.wrap > .grid { margin-top: 20px; }
+main.wrap > .panel:first-child { margin-top: 32px; }
+.grid { padding-top: 0; padding-bottom: 0; }
+.duo { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.duo > * { min-width: 0; }
+
+/* ---------- outlook ---------- */
+.ctl { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.ctl .chips { margin-top: 0; width: auto; }
+.chip.dark { background: var(--ink); color: #fff; }
+.chip.dark:hover { background: #000; }
+.progress { height: 3px; background: var(--track); border-radius: 2px; overflow: hidden; margin: 2px 0 26px; transition: opacity .4s; }
+.progress i { display: block; height: 100%; width: 0; background: var(--blue); }
+.progress.done { opacity: 0; }
+.outlook-grid { display: grid; grid-template-columns: 7fr 5fr; gap: 44px; }
+.outlook-grid > * { min-width: 0; }
+.odds3 { display: flex; gap: 52px; flex-wrap: wrap; }
+.odds3 > div { display: flex; flex-direction: column; }
+.odds3 b { font-size: 64px; line-height: 1; font-weight: 700; letter-spacing: -0.05em;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Arial, sans-serif; }
+.odds3 .label { margin-top: 6px; }
+.sect { margin-top: 30px; font-size: 15px; font-weight: 600; color: var(--ink); }
+.seedchart { width: 100%; height: auto; display: block; margin-top: 6px; }
+.seedchart .sb { transition: none; }
+.seedchart .z1 { fill: var(--blue); }
+.seedchart .z2 { fill: #8fb8d8; }
+.seedchart .z3 { fill: var(--track); }
+.seedchart .sl { fill: var(--mute); font-size: 11px; font-weight: 600; }
+.seedchart .tick { fill: var(--faint); font-size: 11px; }
+.note b { color: var(--mute); font-weight: 600; }
+
+/* ---------- generic bar lists ---------- */
+.barlist { margin-top: 10px; }
+.brow {
+  display: grid; grid-template-columns: 22px minmax(150px, 1.3fr) 1.2fr 46px;
+  align-items: center; gap: 10px; min-height: 36px;
+}
+.brow .rk { color: var(--faint); font-size: 12px; text-align: right; }
+.brow .nm { font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.brow .nm small { display: block; font-size: 11px; color: var(--faint); line-height: 1.2; }
+.brow .track { height: 8px; border-radius: 4px; background: var(--track); overflow: hidden; }
+.brow .fill { height: 100%; border-radius: 4px; background: var(--blue); }
+.brow .v { text-align: right; font-weight: 600; font-size: 14px; }
+.brow.hot .fill { background: var(--orange); }
+.brow.hot .nm { font-weight: 600; }
+.bgap { color: var(--faint); font-size: 14px; letter-spacing: .3em; padding: 2px 0 2px 32px; line-height: 1; }
+.duo .chips { margin-top: 12px; }
+
+/* ---------- standings table ---------- */
+.tbl-wrap { overflow-x: auto; margin-top: 4px; }
+.tbl { width: 100%; border-collapse: collapse; font-size: 14px; }
+.tbl th { text-align: right; font-size: 12px; font-weight: 500; color: var(--faint); padding: 8px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.tbl td { text-align: right; padding: 9px 10px; border-bottom: 1px solid #f0f0f3; white-space: nowrap; }
+.tbl th:nth-child(2), .tbl td.tm { text-align: left; }
+.tbl th:first-child, .tbl td.rk { text-align: right; width: 34px; color: var(--faint); }
+.tbl td.tm { width: 100%; }
+.tbl tr.cut td { border-bottom: 1px dashed #c7c7cc; }
+.tbl tr.hot td { background: #fff4ea; font-weight: 600; }
+.tbl tr.hot td:first-child { border-radius: 10px 0 0 10px; }
+.tbl tr.hot td:last-child { border-radius: 0 10px 10px 0; }
+.dl { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 20px; padding-top: 18px; border-top: 1px solid var(--line); }
+.btn {
+  font: inherit; font-size: 13px; font-weight: 500; cursor: pointer;
+  background: var(--track); color: var(--ink); border: 0; border-radius: 980px; padding: 7px 14px;
+  transition: background .2s;
+}
+.btn:hover { background: #dedee3; }
+
 /* ---------- scatter ---------- */
 .scatter { width: 100%; height: auto; display: block; }
 .scatter .grid-l { stroke: var(--line); }
@@ -188,6 +257,15 @@ h2, .big, .name, .big3 b, .mini b {
 .tip.on { opacity: 1; }
 
 @media (max-width: 900px) {
+  .tiles { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+  .tile { min-height: 80px; padding: 10px 9px; }
+  .tile b { font-size: 26px; }
+  .tile span { font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .duo { grid-template-columns: 1fr; }
+  .outlook-grid { grid-template-columns: 1fr; gap: 30px; }
+  .odds3 { gap: 28px; }
+  .odds3 b { font-size: 46px; }
+  .brow { grid-template-columns: 18px minmax(96px, 1.2fr) 1fr 40px; gap: 8px; }
   .grid { grid-template-columns: 1fr; }
   .grid > * { min-width: 0; }
   .card { order: -1; }

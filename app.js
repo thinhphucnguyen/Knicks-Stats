@@ -8,6 +8,7 @@ const svg = (tag, attrs = {}, parent) => {
   if (parent) parent.appendChild(el);
   return el;
 };
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
 // ---------- data ----------
 const KEYS = ["name", "pos", "gp", "gs", "min", "pts", "reb", "ast", "stl", "blk", "tov",
@@ -16,9 +17,9 @@ const players = SNAPSHOT.rows.map(r => {
   const p = {};
   KEYS.forEach((k, i) => (p[k] = r[i]));
   p.last = p.name.split(" ").pop();
-  p.total = p.pts * p.gp;                                   // season points
+  p.total = p.pts * p.gp;                                                   // season points
   p.ts = p.fga + p.fta ? (p.pts / (2 * (p.fga + 0.44 * p.fta))) * 100 : 0;  // true shooting %
-  p.use = p.fga + 0.44 * p.fta + p.tov;                     // shot-ending possessions / game
+  p.use = p.fga + 0.44 * p.fta + p.tov;                                     // shot-ending possessions / game
   p.stocks = p.stl + p.blk;
   return p;
 });
@@ -26,10 +27,12 @@ const teamTotal = players.reduce((s, p) => s + p.total, 0);
 const rotation = players.filter(p => p.gp >= 5 && p.min >= 10);
 let current = players[0];
 
+const nick = n => (/Trail Blazers$/.test(n) ? "Trail Blazers" : n.split(" ").pop());
+const fmtPct = x => (x >= 0.995 ? ">99%" : x > 0 && x < 0.005 ? "<1%" : (x * 100).toFixed(x < 0.1 ? 1 : 0) + "%");
+
 // ---------- header ----------
 $("rec").textContent = `${SNAPSHOT.record.w}–${SNAPSHOT.record.l}`;
 $("next").textContent = SNAPSHOT.next;
-$("teamTotal").textContent = Math.round(teamTotal).toLocaleString();
 $("asof").textContent = `${SNAPSHOT.source} · as of ${SNAPSHOT.asOf}`;
 
 // ---------- tooltip ----------
@@ -43,21 +46,40 @@ function showTip(e, html) {
 }
 const hideTip = () => tip.classList.remove("on");
 
-// ---------- points strip ----------
-const strip = $("strip");
-const byTotal = [...players].filter(p => p.total > 0).sort((a, b) => b.total - a.total);
-byTotal.forEach(p => {
-  const s = document.createElement("div");
-  s.className = "seg";
-  s.style.flexGrow = p.total;
-  s.style.flexBasis = "0";
-  if (p.total / teamTotal > 0.05) s.innerHTML = `<span>${p.last}</span>`;
-  s.onmousemove = e => showTip(e, `<b>${p.name}</b><br>${Math.round(p.total)} pts (${(p.total / teamTotal * 100).toFixed(0)}% of team)`);
-  s.onmouseleave = hideTip;
-  s.onclick = () => select(p);
-  s.dataset.id = p.name;
-  strip.appendChild(s);
+// ---------- roster tiles (equal boxes) ----------
+const tileEls = new Map();
+players.forEach(p => {
+  const b = document.createElement("button");
+  b.type = "button";
+  b.className = "tile";
+  b.innerHTML = `<b>${NUMBERS[p.name]}</b><span>${esc(p.last)}</span><i>${p.pts.toFixed(1)} ppg</i>`;
+  b.onclick = () => {
+    select(p);
+    $("card").scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+  b.onmousemove = e => showTip(e, `<b>${esc(p.name)}</b><br>${p.gp} games · ${p.min.toFixed(1)} min`);
+  b.onmouseleave = hideTip;
+  $("tiles").appendChild(b);
+  tileEls.set(p, b);
 });
+
+// ---------- generic bar list ----------
+// items: { rank, label, sub, value, text, hot, onclick }
+function barList(el, items) {
+  const max = Math.max(...items.map(i => i.value), 0.0001);
+  el.innerHTML = items.map((it, n) => it.gap
+    ? `<div class="bgap">${it.gap}</div>`
+    : `<div class="brow${it.hot ? " hot" : ""}" data-i="${n}">
+         <span class="rk">${it.rank ?? ""}</span>
+         <span class="nm">${esc(it.label)}${it.sub ? `<small>${esc(it.sub)}</small>` : ""}</span>
+         <div class="track"><div class="fill" style="width:${Math.max(1, (it.value / max) * 100)}%"></div></div>
+         <span class="v">${it.text}</span>
+       </div>`).join("");
+  el.querySelectorAll(".brow").forEach(r => {
+    const it = items[+r.dataset.i];
+    if (it.onclick) { r.style.cursor = "pointer"; r.onclick = it.onclick; }
+  });
+}
 
 // ---------- leaderboard (animated re-sort) ----------
 const ROW = 36;
@@ -69,9 +91,9 @@ const STATS = [
   { key: "blk", label: "BLK" },
   { key: "tpm", label: "3PM" },
   { key: "min", label: "MIN" },
-  { key: "fgp", label: "FG%", pct: true, ok: p => p.gp >= 5 && p.fga >= 4,  note: "Min. 5 games and 4 FGA per game to qualify" },
-  { key: "tpp", label: "3P%", pct: true, ok: p => p.gp >= 5 && p.tpa >= 2,  note: "Min. 5 games and 2 3PA per game to qualify" },
-  { key: "ts",  label: "TS%", pct: true, ok: p => p.gp >= 5 && p.fga >= 4,  note: "Min. 5 games and 4 FGA per game to qualify" }
+  { key: "fgp", label: "FG%", ok: p => p.gp >= 5 && p.fga >= 4, note: "Min. 5 games and 4 FGA per game to qualify" },
+  { key: "tpp", label: "3P%", ok: p => p.gp >= 5 && p.tpa >= 2, note: "Min. 5 games and 2 3PA per game to qualify" },
+  { key: "ts",  label: "TS%", ok: p => p.gp >= 5 && p.fga >= 4, note: "Min. 5 games and 4 FGA per game to qualify" }
 ];
 let stat = STATS[0];
 
@@ -82,7 +104,7 @@ const rows = new Map();
 players.forEach(p => {
   const r = document.createElement("div");
   r.className = "row";
-  r.innerHTML = `<span class="rk"></span><span class="nm">${p.name}</span>
+  r.innerHTML = `<span class="rk"></span><span class="nm">${esc(p.name)}</span>
                  <div class="track"><div class="fill"></div></div><span class="v"></span>`;
   r.onclick = () => {
     select(p);
@@ -122,12 +144,12 @@ function renderBoard() {
 // ---------- player card ----------
 // radar axes: each is scaled against the best rotation player on the team
 const AXES = [
-  { l: "PTS",     v: p => p.pts },
-  { l: "REB",     v: p => p.reb },
-  { l: "AST",     v: p => p.ast },
+  { l: "PTS",       v: p => p.pts },
+  { l: "REB",       v: p => p.reb },
+  { l: "AST",       v: p => p.ast },
   { l: "Stl + Blk", v: p => p.stocks },
-  { l: "3PM",     v: p => p.tpm },
-  { l: "TS%",     v: p => p.ts, lo: 40, hi: 70 }
+  { l: "3PM",       v: p => p.tpm },
+  { l: "TS%",       v: p => p.ts, lo: 40, hi: 70 }
 ];
 AXES.forEach(a => {
   a.lo = a.lo || 0;
@@ -186,10 +208,10 @@ function setGauge(id, pct, made, att) {
 
 function select(p) {
   current = p;
+  const posName = { G: "Guard", F: "Forward", C: "Center" }[p.pos];
   const num = NUMBERS[p.name];
   $("jNum").textContent = num;
   $("jNum").style.fontSize = num.length > 1 ? "44px" : "56px";
-  const posName = { G: "Guard", F: "Forward", C: "Center" }[p.pos];
   $("cName").textContent = p.name;
   $("cSub").textContent = `${posName}  ·  ${p.gp} games  ·  ${p.gs} starts  ·  ${p.min.toFixed(1)} min`;
   $("bPts").textContent = p.pts.toFixed(1);
@@ -217,13 +239,25 @@ function select(p) {
 
   // highlight everywhere
   rows.forEach((r, q) => r.classList.toggle("sel", q === p));
-  strip.querySelectorAll(".seg").forEach(s => s.classList.toggle("sel", s.dataset.id === p.name));
+  tileEls.forEach((t, q) => t.classList.toggle("sel", q === p));
   dots.forEach((d, q) => d.classList.toggle("sel", q === p));
   labels.forEach((l, q) => (l.style.display = q === p || q.min >= 24 ? "" : "none"));
+  renderDist();
+}
+
+// ---------- where the points come from ----------
+function renderDist() {
+  const sorted = [...players].filter(p => p.total > 0).sort((a, b) => b.total - a.total);
+  barList($("distList"), sorted.map((p, i) => ({
+    rank: i + 1, label: p.name, value: p.total,
+    text: `${(p.total / teamTotal * 100).toFixed(0)}%`, hot: p === current,
+    onclick: () => select(p)
+  })));
+  $("distNote").textContent = `${Math.round(teamTotal).toLocaleString()} points in ${SNAPSHOT.record.w + SNAPSHOT.record.l} games. Each bar is a player's share.`;
 }
 
 // ---------- scatter: volume vs efficiency ----------
-const W = 760, H = 340, M = { l: 54, r: 24, t: 14, b: 46 };
+const W = 700, H = 470, M = { l: 52, r: 22, t: 14, b: 46 };
 const X0 = 2, X1 = 28, Y0 = 30, Y1 = 70;
 const sx = v => M.l + ((v - X0) / (X1 - X0)) * (W - M.l - M.r);
 const sy = v => H - M.b - ((v - Y0) / (Y1 - Y0)) * (H - M.t - M.b);
@@ -247,7 +281,7 @@ svg("text", { class: "avgt", x: W - M.r, y: sy(teamTS) - 6, "text-anchor": "end"
 const dots = new Map(), labels = new Map();
 [...rotation].sort((a, b) => b.min - a.min).forEach(p => {
   const c = svg("circle", { class: "dot", cx: sx(p.use), cy: sy(p.ts), r: 3 + Math.sqrt(p.min) * 1.5 }, sc);
-  c.onmousemove = e => showTip(e, `<b>${p.name}</b><br>${p.use.toFixed(1)} possessions · ${p.ts.toFixed(1)} TS%<br>${p.pts.toFixed(1)} pts in ${p.min.toFixed(1)} min`);
+  c.onmousemove = e => showTip(e, `<b>${esc(p.name)}</b><br>${p.use.toFixed(1)} possessions · ${p.ts.toFixed(1)} TS%<br>${p.pts.toFixed(1)} pts in ${p.min.toFixed(1)} min`);
   c.onmouseleave = hideTip;
   c.onclick = () => select(p);
   dots.set(p, c);
@@ -255,6 +289,211 @@ const dots = new Map(), labels = new Map();
   l.textContent = p.last;
   labels.set(p, l);
 });
+
+// ---------- Knicks vs the league ----------
+const CMP = [
+  { key: "pts", label: "PTS" }, { key: "reb", label: "REB" }, { key: "ast", label: "AST" },
+  { key: "stl", label: "STL" }, { key: "blk", label: "BLK" }, { key: "fgp", label: "FG%" }
+];
+let cmp = CMP[0];
+CMP.forEach(c => {
+  const b = document.createElement("button");
+  b.className = "chip"; b.textContent = c.label;
+  b.onclick = () => { cmp = c; renderCmp(); };
+  c.btn = b;
+  $("cmpChips").appendChild(b);
+});
+function renderCmp() {
+  const sorted = [...LEAGUE_PLAYERS].sort((a, b) => b[cmp.key] - a[cmp.key]);
+  const mk = (p, i) => ({
+    rank: i + 1, label: p.name, sub: p.team, value: p[cmp.key], text: p[cmp.key].toFixed(1),
+    hot: p.team === "NYK",
+    onclick: () => { const k = players.find(x => x.name === p.name); if (k) select(k); }
+  });
+  const items = sorted.slice(0, 8).map(mk);
+  sorted.forEach((p, i) => {
+    if (p.team === "NYK" && i >= 8) {
+      if (!items.some(x => x.gap)) items.push({ gap: "···" });
+      items.push(mk(p, i));
+    }
+  });
+  barList($("cmpList"), items);
+  CMP.forEach(c => c.btn.classList.toggle("on", c === cmp));
+}
+
+// ---------- season simulation ----------
+const TOTAL_SIMS = 20000, CHUNK = 1000;
+const SCENARIOS = [
+  { id: "now",  label: "Before tonight" },
+  { id: "win",  label: "Knicks win at IND" },
+  { id: "lose", label: "Knicks lose at IND" }
+];
+let scenario = "now", runId = 0, latest = null, shownTeams = TEAMS, confView = "E";
+
+SCENARIOS.forEach(s => {
+  const b = document.createElement("button");
+  b.className = "chip"; b.textContent = s.label;
+  b.onclick = () => { scenario = s.id; startSim(); };
+  s.btn = b;
+  $("scenario").appendChild(b);
+});
+$("rerun").onclick = () => startSim();
+
+function startSim() {
+  const id = ++runId;
+  const ts = TEAMS.map(t => ({ ...t }));
+  if (scenario !== "now") {
+    const k = ts.find(t => t.abbr === "NYK"), o = ts.find(t => t.abbr === "IND");
+    if (scenario === "win") { k.w++; o.l++; } else { k.l++; o.w++; }
+  }
+  shownTeams = ts;
+  SCENARIOS.forEach(s => s.btn.classList.toggle("on", s.id === scenario));
+  const sim = Sim.createSim(ts);
+  const t0 = performance.now();
+  (function step() {
+    if (id !== runId) return;
+    sim.run(CHUNK);
+    const done = sim.count() >= TOTAL_SIMS;
+    latest = sim.results();
+    renderOutlook(sim.count() / TOTAL_SIMS, done ? (performance.now() - t0) / 1000 : null);
+    if (!done) requestAnimationFrame(step);
+  })();
+}
+
+// outlook: numbers, seed chart, title odds
+const seedChart = $("seedChart");
+const SC = { w: 520, h: 170, l: 8, r: 8, t: 22, b: 26 };
+const seedBars = [], seedLabels = [];
+for (let s = 1; s <= 15; s++) {
+  const bw = (SC.w - SC.l - SC.r) / 15;
+  const x = SC.l + (s - 1) * bw;
+  const cls = s <= 6 ? "z1" : s <= 10 ? "z2" : "z3";
+  seedBars.push(svg("rect", { class: "sb " + cls, x: x + 3, width: bw - 6, rx: 4, y: SC.h - SC.b, height: 0 }, seedChart));
+  seedLabels.push(svg("text", { class: "sl", x: x + bw / 2, y: SC.h - SC.b - 6, "text-anchor": "middle" }, seedChart));
+  svg("text", { class: "tick", x: x + bw / 2, y: SC.h - 8, "text-anchor": "middle" }, seedChart).textContent = s;
+}
+
+function renderOutlook(progress, seconds) {
+  $("simBar").style.width = progress * 100 + "%";
+  $("simBar").parentNode.classList.toggle("done", progress >= 1);
+  $("simStatus").textContent = progress >= 1
+    ? `${TOTAL_SIMS.toLocaleString()} simulated seasons · ${seconds.toFixed(1)} s in your browser`
+    : `Simulating… ${Math.round(progress * TOTAL_SIMS).toLocaleString()} of ${TOTAL_SIMS.toLocaleString()} seasons`;
+
+  const i = shownTeams.findIndex(t => t.abbr === "NYK");
+  const k = latest[i];
+  $("oPlay").textContent = fmtPct(k.playoffs);
+  $("oConf").textContent = fmtPct(k.conf);
+  $("oTitle").textContent = fmtPct(k.title);
+
+  const max = Math.max(...k.seeds, 0.01);
+  k.seeds.forEach((v, n) => {
+    const h = (v / max) * (SC.h - SC.b - SC.t);
+    seedBars[n].setAttribute("height", h);
+    seedBars[n].setAttribute("y", SC.h - SC.b - h);
+    seedLabels[n].setAttribute("y", SC.h - SC.b - h - 6);
+    seedLabels[n].textContent = v >= 0.03 ? Math.round(v * 100) + "%" : "";
+  });
+  const avgSeed = k.seeds.reduce((s, v, n) => s + v * (n + 1), 0);
+  $("oNote").innerHTML = `Projected record <b>${Math.round(k.wins)}&ndash;${82 - Math.round(k.wins)}</b> &middot; average seed <b>${avgSeed.toFixed(1)}</b> &middot; direct playoff spot (top 6) <b>${fmtPct(k.top6)}</b> &middot; play-in <b>${fmtPct(k.playin)}</b>`;
+
+  // championship odds
+  const ranked = shownTeams.map((t, n) => ({ t, r: latest[n] })).sort((a, b) => b.r.title - a.r.title);
+  const items = ranked.slice(0, 8).map((x, n) => ({
+    rank: n + 1, label: nick(x.t.name), value: x.r.title, text: fmtPct(x.r.title), hot: x.t.abbr === "NYK"
+  }));
+  const kn = ranked.findIndex(x => x.t.abbr === "NYK");
+  if (kn >= 8) {
+    items.push({ gap: "···" });
+    items.push({ rank: kn + 1, label: nick(ranked[kn].t.name), value: ranked[kn].r.title, text: fmtPct(ranked[kn].r.title), hot: true });
+  }
+  barList($("titleList"), items);
+
+  renderStandings();
+  renderMvp();
+}
+
+// ---------- standings ----------
+[["E", "East"], ["W", "West"]].forEach(([id, label]) => {
+  const b = document.createElement("button");
+  b.className = "chip"; b.textContent = label;
+  b.onclick = () => { confView = id; renderStandings(); };
+  b.dataset.id = id;
+  $("confChips").appendChild(b);
+});
+
+function renderStandings() {
+  const list = shownTeams.map((t, n) => ({ t, r: latest ? latest[n] : null }))
+    .filter(x => x.t.conf === confView)
+    .sort((a, b) => (b.t.w / (b.t.w + b.t.l)) - (a.t.w / (a.t.w + a.t.l)) || (b.t.ppg - b.t.opp) - (a.t.ppg - a.t.opp));
+  const lead = list[0].t;
+  $("standTbl").tBodies[0].innerHTML = list.map((x, n) => {
+    const t = x.t, g = t.w + t.l, margin = t.ppg - t.opp;
+    const gb = ((lead.w - t.w) + (t.l - lead.l)) / 2;
+    return `<tr class="${t.abbr === "NYK" ? "hot" : ""}${n === 5 || n === 9 ? " cut" : ""}">
+      <td class="rk">${n + 1}</td><td class="tm">${esc(t.name)}</td>
+      <td>${t.w}&ndash;${t.l}</td><td>${(t.w / g).toFixed(3).replace(/^0/, "")}</td>
+      <td>${gb === 0 ? "&ndash;" : gb.toFixed(1)}</td>
+      <td>${margin > 0 ? "+" : ""}${margin.toFixed(1)}</td>
+      <td>${x.r ? fmtPct(x.r.playoffs) : ""}</td><td>${x.r ? fmtPct(x.r.title) : ""}</td></tr>`;
+  }).join("");
+  $("confChips").querySelectorAll(".chip").forEach(b => b.classList.toggle("on", b.dataset.id === confView));
+}
+
+// ---------- MVP ----------
+let mvpRows = [];
+function renderMvp() {
+  const proj = {}, games = {};
+  shownTeams.forEach((t, n) => { proj[t.abbr] = latest[n].wins; games[t.abbr] = t.w + t.l; });
+  mvpRows = Sim.mvpOdds(LEAGUE_PLAYERS, proj, games);
+  const mk = (x, n) => ({
+    rank: n + 1, label: x.p.name, sub: `${x.p.team} · ${x.p.pts.toFixed(1)}/${x.p.reb.toFixed(1)}/${x.p.ast.toFixed(1)}`,
+    value: x.prob, text: fmtPct(x.prob), hot: x.p.team === "NYK",
+    onclick: () => { const k = players.find(q => q.name === x.p.name); if (k) select(k); }
+  });
+  const items = mvpRows.slice(0, 6).map(mk);
+  mvpRows.forEach((x, n) => {
+    if (x.p.team === "NYK" && n >= 6) {
+      if (!items.some(q => q.gap)) items.push({ gap: "···" });
+      items.push(mk(x, n));
+    }
+  });
+  barList($("mvpList"), items);
+}
+
+// ---------- CSV downloads ----------
+function download(name, rows) {
+  const csv = rows.map(r => r.map(v => {
+    const s = String(v ?? "");
+    return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  }).join(",")).join("\n");
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+$("dlStand").onclick = () => {
+  const head = ["Team", "Conference", "W", "L", "PPG", "Opp PPG", "Margin", "Strength rating", "Projected wins", "Playoffs %", "Win conference %", "Title %"];
+  download("knicks-standings-odds.csv", [head, ...shownTeams.map((t, n) => {
+    const r = latest[n];
+    return [t.name, t.conf === "E" ? "East" : "West", t.w, t.l, t.ppg, t.opp, (t.ppg - t.opp).toFixed(1),
+            r.rating.toFixed(2), r.wins.toFixed(1), (r.playoffs * 100).toFixed(1), (r.conf * 100).toFixed(1), (r.title * 100).toFixed(1)];
+  })]);
+};
+$("dlKnicks").onclick = () => {
+  const head = ["Player", "Number", "Pos", "GP", "GS", "MIN", "PTS", "REB", "AST", "STL", "BLK", "TOV", "FG%", "3P%", "FT%", "FGM", "FGA", "3PM", "3PA", "FTM", "FTA", "TS%"];
+  download("knicks-player-stats.csv", [head, ...players.map(p => [p.name, NUMBERS[p.name], p.pos, p.gp, p.gs, p.min, p.pts, p.reb, p.ast, p.stl, p.blk, p.tov,
+    p.fgp, p.tpp, p.ftp, p.fgm, p.fga, p.tpm, p.tpa, p.ftm, p.fta, p.ts.toFixed(1)])]);
+};
+$("dlLeague").onclick = () => {
+  const head = ["Player", "Team", "Pos", "GP", "MIN", "PTS", "REB", "AST", "STL", "BLK", "TOV", "FG%", "3P%", "FT%", "MVP model %"];
+  const odds = new Map(mvpRows.map(x => [x.p.name, x.prob]));
+  download("league-leaders-mvp-model.csv", [head, ...LEAGUE_PLAYERS.map(p => [p.name, p.team, p.pos, p.gp, p.min, p.pts, p.reb, p.ast, p.stl, p.blk, p.tov,
+    p.fgp, p.tpp, p.ftp, ((odds.get(p.name) || 0) * 100).toFixed(1)])]);
+};
 
 // ---------- keyboard ----------
 addEventListener("keydown", e => {
@@ -265,4 +504,6 @@ addEventListener("keydown", e => {
 
 // ---------- go ----------
 renderBoard();
+renderCmp();
 select(current);
+startSim();
